@@ -39,7 +39,7 @@ Points are calculated according to these rules:
 ### Running with Go
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/receipt-processor.git
+git clone https://github.com/ycChu711/receipt-processor
 cd receipt-processor
 
 # Install dependencies

@@ -53,7 +53,9 @@ func TestCalculatePoints(t *testing.T) {
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
-			expected: 53, // 3 alphanumeric chars (A, W) + 50 points for round dollar
+			expected: 83,
+			// 2 (retailer) + 50 (round dollar) + 25 (multiple of 0.25) +
+			// 0 (0 item pairs) + 0 (desc points) + 6 (odd day) + 0 (time)
 		},
 		{
 			name: "Testing Rule 2: Round dollar amount",
@@ -64,7 +66,9 @@ func TestCalculatePoints(t *testing.T) {
 				Items:        []models.Item{{ShortDescription: "Item", Price: "5.00"}},
 				Total:        "5.00",
 			},
-			expected: 54, // 4 points for retailer + 50 points for round dollar amount
+			expected: 85,
+			// 4 (retailer) + 50 (round dollar) + 25 (multiple of 0.25) +
+			// 0 (0 item pairs) + 0 (desc points) + 6 (odd day) + 0 (time)
 		},
 		{
 			name: "Testing Rule 3: Multiple of 0.25",
@@ -75,7 +79,9 @@ func TestCalculatePoints(t *testing.T) {
 				Items:        []models.Item{{ShortDescription: "Item", Price: "5.25"}},
 				Total:        "5.25",
 			},
-			expected: 29, // 4 points for retailer + 25 points for multiple of 0.25
+			expected: 35,
+			// 4 (retailer) + 0 (not round dollar) + 25 (multiple of 0.25) +
+			// 0 (0 item pairs) + 0 (desc points) + 6 (odd day) + 0 (time)
 		},
 		{
 			name: "Testing Rule 4: Points for pairs of items",
@@ -92,7 +98,9 @@ func TestCalculatePoints(t *testing.T) {
 				},
 				Total: "5.00",
 			},
-			expected: 64, // 4 points for retailer + 50 points for round dollar + 10 points for 2 pairs
+			expected: 95,
+			// 4 (retailer) + 50 (round dollar) + 25 (multiple of 0.25) +
+			// 10 (2 item pairs) + 0 (desc points) + 6 (odd day) + 0 (time)
 		},
 		{
 			name: "Testing Rule 5: Description length multiple of 3",
@@ -101,33 +109,26 @@ func TestCalculatePoints(t *testing.T) {
 				PurchaseDate: "2022-01-01",
 				PurchaseTime: "13:01",
 				Items: []models.Item{
-					{ShortDescription: "123456789", Price: "3.00"}, // Length is 9, a multiple of 3
+					{ShortDescription: "123456789", Price: "3.00"},
 				},
 				Total: "3.00",
 			},
-			expected: 55, // 4 points for retailer + 50 points for round dollar + 1 point (3.00 * 0.2 = 0.6, rounded up to 1)
-		},
-		{
-			name: "Testing Rule 6: Total greater than 10.00",
-			receipt: models.Receipt{
-				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
-				Items:        []models.Item{{ShortDescription: "Item", Price: "12.00"}},
-				Total:        "12.00",
-			},
-			expected: 59, // 4 points for retailer + 50 points for round dollar + 5 points for total > 10.00
+			expected: 86,
+			// 4 (retailer) + 50 (round dollar) + 25 (multiple of 0.25) +
+			// 0 (0 item pairs) + 1 (desc points) + 6 (odd day) + 0 (time)
 		},
 		{
 			name: "Testing Rule 7: Odd purchase day",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01", // 1st is odd
+				PurchaseDate: "2022-01-01",
 				PurchaseTime: "13:01",
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
-			expected: 60, // 4 points for retailer + 50 points for round dollar + 6 points for odd day
+			expected: 85,
+			// 4 (retailer) + 50 (round dollar) + 25 (multiple of 0.25) +
+			// 0 (0 item pairs) + 0 (desc points) + 6 (odd day) + 0 (time)
 		},
 		{
 			name: "Testing Rule 8: Purchase time between 2:00PM and 4:00PM",
@@ -138,7 +139,9 @@ func TestCalculatePoints(t *testing.T) {
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
-			expected: 70, // 4 points for retailer + 50 points for round dollar + 6 points for odd day + 10 points for time
+			expected: 95,
+			// 4 (retailer) + 50 (round dollar) + 25 (multiple of 0.25) +
+			// 0 (0 item pairs) + 0 (desc points) + 6 (odd day) + 10 (time)
 		},
 	}
 

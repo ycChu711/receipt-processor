@@ -116,8 +116,8 @@ func TestGetPoints(t *testing.T) {
 
 	var pointsResponse models.PointsResponse
 	json.Unmarshal(rr.Body.Bytes(), &pointsResponse)
-	if pointsResponse.Points != 60 { // 6 points for Target + 50 points for round dollar + 4 points for odd day
-		t.Errorf("Expected 60 points, got %v", pointsResponse.Points)
+	if pointsResponse.Points != 87 { // 6 points for Target + 50 points for round dollar + 25 points for multiple of 0.25 + 6 points for odd day
+		t.Errorf("Expected 87 points, got %v", pointsResponse.Points)
 	}
 
 	// Test with invalid ID

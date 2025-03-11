@@ -17,11 +17,11 @@ RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o 
 # Final stage - minimal runtime image
 FROM alpine:3.17
 
-# Add CA certificates for HTTPS
-RUN apk --no-cache add ca-certificates
+# Add CA certificates and create non-root user in one layer
+RUN apk --no-cache add ca-certificates && \
+    addgroup -S appgroup && \
+    adduser -S appuser -G appgroup
 
-# Create non-root user for security
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 USER appuser
 
 # Set working directory

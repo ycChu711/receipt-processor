@@ -322,7 +322,7 @@ func TestCalculatePoints(t *testing.T) {
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
-			expected: 95,
+			expected: 85,
 		},
 		{
 			name: "Edge Case - Just Before 2:00 PM",

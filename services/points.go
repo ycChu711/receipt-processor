@@ -166,7 +166,7 @@ func CalculatePoints(receipt *models.Receipt) int64 {
 	hour := purchaseTime.Hour()
 	minute := purchaseTime.Minute()
 
-	inTimeRange := (hour == 14 && minute >= 0) || (hour == 15)
+	inTimeRange := (hour == 14 && minute > 0) || (hour == 15)
 	rule8Points := int64(0)
 
 	if inTimeRange {

@@ -48,6 +48,16 @@ go mod download
 go run main.go
 ```
 
+### Running with Docker
+```bash
+# Build and run using Docker Compose
+docker-compose up
+
+# Or build and run using Docker directly
+docker build -t receipt-processor .
+docker run -p 8080:8080 receipt-processor
+```
+
 ### Running Tests
 ```bash
 # Run all tests

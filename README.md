@@ -46,6 +46,7 @@ go mod download
 
 # Run the application
 go run main.go
+```
 
 ### Running Tests
 ```bash
@@ -60,3 +61,4 @@ go test ./services
 
 # Run a specific test
 go test ./services -run TestCalculatePoints
+```

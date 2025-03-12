@@ -34,7 +34,7 @@ Points are calculated according to these rules:
 ## Installation & Running
 
 ### Prerequisites
-- Go 1.19+ or Docker
+- Go 1.24+ or Docker
 
 ### Running with Go
 ```bash

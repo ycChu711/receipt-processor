@@ -1,6 +1,6 @@
 module github.com/ycChu711/receipt-processor
 
-go 1.21
+go 1.24
 
 require (
 	github.com/google/uuid v1.6.0
@@ -9,5 +9,5 @@ require (
 
 require (
 	github.com/gorilla/mux v1.8.1
-	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8 // indirect
+	golang.org/x/sys v0.0.0-20220715151400-c0bba94af5f8
 )

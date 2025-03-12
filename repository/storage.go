@@ -6,20 +6,18 @@ import (
 	"github.com/ycChu711/receipt-processor/models"
 )
 
-// ReceiptStorage  defines the interface for receipt storage
+// ReceiptStorage defines operations for persisting receipts
 type ReceiptStorage interface {
 	SaveReceipt(id string, receipt models.Receipt, points int64) error
 	GetPoints(id string) (int64, bool)
 }
 
-// InMemoryStorage implements ReceiptStorage using in-memory maps
 type InMemoryStorage struct {
 	receipts map[string]models.Receipt
 	points   map[string]int64
 	mutex    *sync.RWMutex
 }
 
-// NewInMemoryStorage creates a new in-memory storage
 func NewInMemoryStorage() *InMemoryStorage {
 	return &InMemoryStorage{
 		receipts: make(map[string]models.Receipt),
@@ -28,7 +26,6 @@ func NewInMemoryStorage() *InMemoryStorage {
 	}
 }
 
-// SaveReceipt saves a receipt and its points
 func (s *InMemoryStorage) SaveReceipt(id string, receipt models.Receipt, points int64) error {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
@@ -38,7 +35,6 @@ func (s *InMemoryStorage) SaveReceipt(id string, receipt models.Receipt, points 
 	return nil
 }
 
-// GetPoints gets the points for a receipt by ID
 func (s *InMemoryStorage) GetPoints(id string) (int64, bool) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()

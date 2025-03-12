@@ -11,7 +11,6 @@ import (
 	"github.com/ycChu711/receipt-processor/utils"
 )
 
-// CalculatePoints calculates the points for a receipt
 func CalculatePoints(receipt *models.Receipt) int64 {
 	var points int64 = 0
 
@@ -167,7 +166,6 @@ func CalculatePoints(receipt *models.Receipt) int64 {
 	hour := purchaseTime.Hour()
 	minute := purchaseTime.Minute()
 
-	// Check if time is between 2:00 PM (14:00) and 4:00 PM (16:00)
 	inTimeRange := (hour == 14 && minute >= 0) || (hour == 15)
 	rule8Points := int64(0)
 

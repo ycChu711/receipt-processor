@@ -11,19 +11,19 @@ import (
 	"github.com/ycChu711/receipt-processor/utils"
 )
 
-// ReceiptHandler handles receipt-related requests
+// ReceiptHandler manages HTTP requests for receipts
 type ReceiptHandler struct {
 	service *services.ReceiptService
 }
 
-// NewReceiptHandler creates a new receipt handler
+// NewReceiptHandler creates a handler with the given service
 func NewReceiptHandler(service *services.ReceiptService) *ReceiptHandler {
 	return &ReceiptHandler{
 		service: service,
 	}
 }
 
-// ProcessReceipt handles the POST /receipts/process endpoint
+// ProcessReceipt handles POST /receipts/process
 func (h *ReceiptHandler) ProcessReceipt(w http.ResponseWriter, r *http.Request) {
 	utils.Logger.Info("Processing receipt request")
 
@@ -35,7 +35,6 @@ func (h *ReceiptHandler) ProcessReceipt(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Validate the receipt
 	if err := receipt.Validate(); err != nil {
 		utils.Logger.WithError(err).Warn("Receipt validation failed")
 		w.WriteHeader(http.StatusBadRequest)
@@ -43,7 +42,6 @@ func (h *ReceiptHandler) ProcessReceipt(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Process the receipt
 	id, err := h.service.ProcessReceipt(receipt)
 	if err != nil {
 		utils.Logger.WithError(err).Error("Failed to process receipt")
@@ -52,14 +50,13 @@ func (h *ReceiptHandler) ProcessReceipt(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	// Return the ID
 	utils.Logger.WithField("id", id).Info("Receipt processed successfully")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(models.ReceiptResponse{ID: id})
 }
 
-// GetPoints handles the GET /receipts/{id}/points endpoint
+// GetPoints handles the GET /receipts/{id}/points
 func (h *ReceiptHandler) GetPoints(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	id := vars["id"]

@@ -50,7 +50,7 @@ func TestProcessReceipt(t *testing.T) {
 		t.Errorf("Expected non-empty ID")
 	}
 
-	// Test invalid receipt (missing retailer)
+	// Test invalid receipt - missing retailer
 	invalidReceipt := models.Receipt{
 		PurchaseDate: "2022-01-01",
 		PurchaseTime: "13:01",
@@ -73,12 +73,11 @@ func TestProcessReceipt(t *testing.T) {
 }
 
 func TestGetPoints(t *testing.T) {
-	// Setup test data
+
 	storage := repository.NewInMemoryStorage()
 	service := services.NewReceiptService(storage)
 	handler := NewReceiptHandler(service)
 
-	// Process a receipt first to get a valid ID
 	receipt := models.Receipt{
 		Retailer:     "Target",
 		PurchaseDate: "2022-01-01",
@@ -116,7 +115,7 @@ func TestGetPoints(t *testing.T) {
 
 	var pointsResponse models.PointsResponse
 	json.Unmarshal(rr.Body.Bytes(), &pointsResponse)
-	if pointsResponse.Points != 87 { // 6 points for Target + 50 points for round dollar + 25 points for multiple of 0.25 + 6 points for odd day
+	if pointsResponse.Points != 87 {
 		t.Errorf("Expected 87 points, got %v", pointsResponse.Points)
 	}
 

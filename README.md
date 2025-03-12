@@ -27,9 +27,8 @@ Points are calculated according to these rules:
 3. 25 points if the total is a multiple of 0.25
 4. 5 points for every two items on the receipt
 5. If the trimmed length of the item description is a multiple of 3, multiply the price by 0.2 and round up for points
-6. 5 points if the total is greater than $10.00
-7. 6 points if the purchase day is odd
-8. 10 points if the time of purchase is between 2:00pm and 4:00pm
+6. 6 points if the purchase day is odd
+7. 10 points if the time of purchase is between 2:00pm and 4:00pm
 
 ## Installation & Running
 

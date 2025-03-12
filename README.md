@@ -46,3 +46,17 @@ go mod download
 
 # Run the application
 go run main.go
+
+### Running Tests
+```bash
+# Run all tests
+go test ./...
+
+# Run tests with coverage report
+go test ./... -cover
+
+# Run tests for a specific package
+go test ./services
+
+# Run a specific test
+go test ./services -run TestCalculatePoints

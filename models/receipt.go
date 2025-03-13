@@ -20,3 +20,8 @@ type ReceiptResponse struct {
 type PointsResponse struct {
 	Points int64 `json:"points"`
 }
+
+type ReceiptWithPoints struct {
+	Receipt Receipt
+	Points  int64
+}

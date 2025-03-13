@@ -6,23 +6,20 @@ import (
 	"github.com/ycChu711/receipt-processor/models"
 )
 
-// ReceiptStorage defines operations for persisting receipts
 type ReceiptStorage interface {
 	SaveReceipt(id string, receipt models.Receipt, points int64) error
 	GetPoints(id string) (int64, bool)
 }
 
 type InMemoryStorage struct {
-	receipts map[string]models.Receipt
-	points   map[string]int64
-	mutex    *sync.RWMutex
+	receiptsWithPoints map[string]models.ReceiptWithPoints
+	mutex              *sync.RWMutex
 }
 
 func NewInMemoryStorage() *InMemoryStorage {
 	return &InMemoryStorage{
-		receipts: make(map[string]models.Receipt),
-		points:   make(map[string]int64),
-		mutex:    &sync.RWMutex{},
+		receiptsWithPoints: map[string]models.ReceiptWithPoints{},
+		mutex:              &sync.RWMutex{},
 	}
 }
 
@@ -30,15 +27,31 @@ func (s *InMemoryStorage) SaveReceipt(id string, receipt models.Receipt, points 
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
-	s.receipts[id] = receipt
-	s.points[id] = points
+	s.receiptsWithPoints[id] = models.ReceiptWithPoints{
+		Receipt: receipt,
+		Points:  points,
+	}
 	return nil
+}
+
+func (s *InMemoryStorage) GetReceipt(id string) (models.Receipt, bool) {
+	s.mutex.RLock()
+	defer s.mutex.RUnlock()
+
+	receiptWithPoints, exists := s.receiptsWithPoints[id]
+	if !exists {
+		return models.Receipt{}, false
+	}
+	return receiptWithPoints.Receipt, true
 }
 
 func (s *InMemoryStorage) GetPoints(id string) (int64, bool) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
-	points, exists := s.points[id]
-	return points, exists
+	receiptWithPoints, exists := s.receiptsWithPoints[id]
+	if !exists {
+		return 0, false
+	}
+	return receiptWithPoints.Points, true
 }

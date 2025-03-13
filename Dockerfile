@@ -1,5 +1,5 @@
 # Build stage
-FROM golang:1.21-alpine AS builder
+FROM golang:1.24-alpine AS builder
 
 # Set working directory
 WORKDIR /app
@@ -15,7 +15,7 @@ COPY . .
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -ldflags="-w -s" -o receipt-processor .
 
 # Final stage - minimal runtime image
-FROM alpine:3.17
+FROM alpine:3.19
 
 # Add CA certificates and create non-root user in one layer
 RUN apk --no-cache add ca-certificates && \

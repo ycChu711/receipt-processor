@@ -38,8 +38,8 @@ func (s *InMemoryStorage) GetReceipt(id string) (models.Receipt, bool) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
-	receiptWithPoints, exists := s.receiptsWithPoints[id]
-	if !exists {
+	receiptWithPoints, found := s.receiptsWithPoints[id]
+	if !found {
 		return models.Receipt{}, false
 	}
 	return receiptWithPoints.Receipt, true
@@ -49,8 +49,8 @@ func (s *InMemoryStorage) GetPoints(id string) (int64, bool) {
 	s.mutex.RLock()
 	defer s.mutex.RUnlock()
 
-	receiptWithPoints, exists := s.receiptsWithPoints[id]
-	if !exists {
+	receiptWithPoints, found := s.receiptsWithPoints[id]
+	if !found {
 		return 0, false
 	}
 	return receiptWithPoints.Points, true

@@ -12,19 +12,18 @@ import (
 
 func main() {
 	utils.InitLogger()
-	utils.Logger.Info("Starting receipt processor API")
+	utils.Logger.Info("Starting receipt processor service...")
 
+	// create router
 	r := mux.NewRouter()
-	utils.Logger.Info("Router initialized")
 
+	// create storage and service
 	storage := repository.NewInMemoryStorage()
-	utils.Logger.Info("Storage initialized")
-
 	receiptService := services.NewReceiptService(storage)
-	utils.Logger.Info("Receipt service initialized")
 
+	// setup api routes
 	api.SetupRoutes(r, receiptService)
-	utils.Logger.Info("Routes configured")
+	utils.Logger.Info("API Routes configured")
 
 	// Start server
 	utils.Logger.Info("Server starting on port 8080...")

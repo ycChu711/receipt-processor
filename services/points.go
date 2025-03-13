@@ -34,26 +34,26 @@ func CalculatePoints(receipt *models.Receipt) int64 {
 }
 
 // Rule 1: One point for every alphanumeric character in the retailer name
-func calculateRetailerNamePoints(retailerName string) int64 {
-	var alphaNumCount int64 = 0
-	alphaNumChars := ""
+func calculateRetailerNamePoints(name string) int64 {
+	points := int64(0)
+	validChars := ""
 
-	for _, char := range retailerName {
+	for _, char := range name {
 		if (char >= 'a' && char <= 'z') || (char >= 'A' && char <= 'Z') || (char >= '0' && char <= '9') {
-			alphaNumCount++
-			alphaNumChars += string(char)
+			points++
+			validChars += string(char)
 		}
 	}
 
 	utils.Logger.WithFields(logrus.Fields{
 		"rule":             "1",
-		"retailer":         retailerName,
-		"alphanumeric":     alphaNumChars,
-		"count":            alphaNumCount,
-		"points_from_rule": alphaNumCount,
-	}).Debug("Applied retailer name points rule")
+		"retailer":         name,
+		"alphanumeric":     validChars,
+		"count":            points,
+		"points_from_rule": points,
+	}).Debug("Retailer name points rule")
 
-	return alphaNumCount
+	return points
 }
 
 // Rule 2: 50 points if the total is a round dollar amount with no cents
@@ -64,15 +64,10 @@ func calculateRoundDollarPoints(total string) int64 {
 
 	if isRoundDollar {
 		points = 50
+		utils.Logger.Debugf("Rule 2: %s is a round dollar amount", total)
+	} else {
+		utils.Logger.Debugf("Rule 2: %s is not a round dollar amount", total)
 	}
-
-	utils.Logger.WithFields(logrus.Fields{
-		"rule":             "2",
-		"total":            total,
-		"is_round_dollar":  isRoundDollar,
-		"points_from_rule": points,
-	}).Debug("Applied round dollar amount rule")
-
 	return points
 }
 
@@ -84,30 +79,18 @@ func calculateQuarterMultiplePoints(total string) int64 {
 
 	if isMultipleOfQuarter {
 		points = 25
+		utils.Logger.Debug("Total is a multiple of 0.25")
 	}
-
-	utils.Logger.WithFields(logrus.Fields{
-		"rule":               "3",
-		"total":              total,
-		"is_multiple_of_025": isMultipleOfQuarter,
-		"points_from_rule":   points,
-	}).Debug("Applied multiple of 0.25 rule")
 
 	return points
 }
 
 // Rule 4: 5 points for every two items on the receipt
 func calculateItemPairPoints(itemCount int) int64 {
-	itemPairs := itemCount / 2
-	points := int64(itemPairs * 5)
+	pairs := itemCount / 2
+	points := int64(pairs * 5)
 
-	utils.Logger.WithFields(logrus.Fields{
-		"rule":             "4",
-		"items_count":      itemCount,
-		"pairs":            itemPairs,
-		"points_from_rule": points,
-	}).Debug("Applied item pairs rule")
-
+	utils.Logger.Debugf("%d items on the receipt, %d pairs, %d points", itemCount, pairs, points)
 	return points
 }
 
@@ -121,37 +104,17 @@ func calculateDescriptionLengthPoints(items []models.Item) int64 {
 		trimmedLen := len(trimmedDesc)
 		itemPoints := int64(0)
 
-		itemLogger := utils.Logger.WithFields(logrus.Fields{
-			"rule":        "5",
-			"item_index":  i + 1,
-			"description": trimmedDesc,
-			"length":      trimmedLen,
-		})
-
 		if trimmedLen > 0 && trimmedLen%3 == 0 {
 			price, _ := strconv.ParseFloat(item.Price, 64)
-			calculation := price * 0.2
-			itemPoints = int64(math.Ceil(calculation))
+			itemPoints = int64(math.Ceil(price * 0.2))
 			totalPoints += itemPoints
 
-			itemLogger.WithFields(logrus.Fields{
-				"is_multiple_of_3": true,
-				"price":            item.Price,
-				"calculation":      calculation,
-				"points":           itemPoints,
-			}).Debug("Applied description length rule to item")
 		} else {
-			itemLogger.WithFields(logrus.Fields{
-				"is_multiple_of_3": false,
-				"points":           0,
-			}).Debug("Applied description length rule to item")
+			utils.Logger.Debugf("Item %d description length is not a multiple of 3", i)
 		}
 	}
 
-	utils.Logger.WithFields(logrus.Fields{
-		"rule":             "5",
-		"points_from_rule": totalPoints,
-	}).Debug("Applied description length rule total")
+	utils.Logger.Debugf("Total points from rule 5: %d", totalPoints)
 
 	return totalPoints
 }
@@ -166,13 +129,6 @@ func calculateOddDayPoints(purchaseDate string) int64 {
 	if isOddDay {
 		points = 6
 	}
-
-	utils.Logger.WithFields(logrus.Fields{
-		"rule":             "7",
-		"purchase_day":     day,
-		"is_odd":           isOddDay,
-		"points_from_rule": points,
-	}).Debug("Applied odd day rule")
 
 	return points
 }
@@ -189,13 +145,6 @@ func calculateTimeRangePoints(purchaseTime string) int64 {
 	if inTimeRange {
 		points = 10
 	}
-
-	utils.Logger.WithFields(logrus.Fields{
-		"rule":                "8",
-		"purchase_time":       purchaseTime,
-		"is_in_special_range": inTimeRange,
-		"points_from_rule":    points,
-	}).Debug("Applied time range rule")
 
 	return points
 }

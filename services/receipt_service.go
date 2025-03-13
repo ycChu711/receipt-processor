@@ -11,13 +11,15 @@ type ReceiptService struct {
 	storage repository.ReceiptStorage
 }
 
+// create new service with given storage
 func NewReceiptService(storage repository.ReceiptStorage) *ReceiptService {
 	return &ReceiptService{
 		storage: storage,
 	}
 }
 
-// processes a receipt and returns the ID
+// Processes a receipt and returns the ID
+// generate unique id -> calculate points -> save receipt and points -> return id
 func (s *ReceiptService) ProcessReceipt(receipt models.Receipt) (string, error) {
 
 	id := uuid.New().String()

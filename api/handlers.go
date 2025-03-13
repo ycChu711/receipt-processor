@@ -28,28 +28,42 @@ func (h *ReceiptHandler) ProcessReceipt(w http.ResponseWriter, r *http.Request) 
 	utils.Logger.Info("Processing receipt request")
 
 	var receipt models.Receipt
-	if err := json.NewDecoder(r.Body).Decode(&receipt); err != nil {
+	decoder := json.NewDecoder(r.Body)
+	err := decoder.Decode(&receipt)
+
+	// check bad json
+	if err != nil {
 		utils.Logger.WithError(err).Error("Failed to decode receipt JSON")
 		w.WriteHeader(http.StatusBadRequest)
+		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid receipt format. Please verify input."})
 		return
 	}
 
+	// validate receipt
 	if err := receipt.Validate(); err != nil {
 		utils.Logger.WithError(err).Warn("Receipt validation failed")
 		w.WriteHeader(http.StatusBadRequest)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid receipt. Please verify input. " + err.Error()})
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Invalid receipt: " + err.Error(),
+		})
 		return
 	}
 
+	// process and get id
 	id, err := h.service.ProcessReceipt(receipt)
 	if err != nil {
 		utils.Logger.WithError(err).Error("Failed to process receipt")
 		w.WriteHeader(http.StatusInternalServerError)
-		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to process receipt"})
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "Server error processing receipt",
+		})
 		return
 	}
 
+	// return id
 	utils.Logger.WithField("id", id).Info("Receipt processed successfully")
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
@@ -63,18 +77,21 @@ func (h *ReceiptHandler) GetPoints(w http.ResponseWriter, r *http.Request) {
 
 	utils.Logger.WithField("id", id).Info("Getting points for receipt")
 
-	points, exists := h.service.GetPoints(id)
-	if !exists {
+	points, found := h.service.GetPoints(id)
+	if !found {
 		utils.Logger.WithField("id", id).Warn("Receipt not found")
 		w.WriteHeader(http.StatusNotFound)
-		json.NewEncoder(w).Encode(map[string]string{"error": "No receipt found for that ID"})
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"error": "No receipt found for that ID",
+		})
 		return
 	}
 
 	utils.Logger.WithFields(logrus.Fields{
 		"id":     id,
 		"points": points,
-	}).Info("Points retrieved successfully")
+	}).Info("Got points for the receipt")
 
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

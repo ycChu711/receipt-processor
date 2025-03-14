@@ -9,44 +9,64 @@ import (
 
 func (r *Receipt) Validate() error {
 
-	if strings.TrimSpace(r.Retailer) == "" {
+	if err := validateRetailer(r.Retailer); err != nil {
+		return err
+	}
+
+	if err := validateDateTime(r.PurchaseDate, r.PurchaseTime); err != nil {
+		return err
+	}
+
+	if err := validateItems(r.Items); err != nil {
+		return err
+	}
+
+	return validateTotal(r.Total)
+
+}
+
+func validateRetailer(retailer string) error {
+	if strings.TrimSpace(retailer) == "" {
 		return errors.New("Retailer is required")
 	}
-	retailerRegax := regexp.MustCompile(`^[\w\s\-&]+$`)
-	if !retailerRegax.MatchString(r.Retailer) {
+	retailerRegex := regexp.MustCompile(`^[\w\s\-&]+$`)
+	if !retailerRegex.MatchString(retailer) {
 		return errors.New("Retailer must be alphanumeric")
 	}
+	return nil
+}
 
-	// purchase date - YYYY-MM-DD
-	if r.PurchaseDate == "" {
+func validateDateTime(date, purchaseTime string) error {
+
+	if date == "" {
 		return errors.New("Purchase date is required")
 	}
-	_, err := time.Parse("2006-01-02", r.PurchaseDate)
-	if err != nil {
-		return errors.New("Invalid purchase date format (should be YYYY-MM-DD)")
+	if _, err := time.Parse("2006-01-02", date); err != nil {
+		return errors.New("Invalid purchase date format, should be YYYY-MM-DD")
 	}
 
-	// purchase time - HH:MM
-	if r.PurchaseTime == "" {
+	if purchaseTime == "" {
 		return errors.New("Purchase time is required")
 	}
-	_, err = time.Parse("15:04", r.PurchaseTime)
-	if err != nil {
-		return errors.New("Invalid purchase time format (should be HH:MM)")
+	if _, err := time.Parse("15:04", purchaseTime); err != nil {
+		return errors.New("Invalid purchase time format, should be HH:MM")
 	}
 
-	// Validate items
-	if len(r.Items) == 0 {
-		return errors.New("Need at least one item ")
+	return nil
+}
+
+func validateItems(items []Item) error {
+	if len(items) == 0 {
+		return errors.New("Need at least one item")
 	}
 
-	for _, item := range r.Items {
+	for _, item := range items {
 		if strings.TrimSpace(item.ShortDescription) == "" {
-			return errors.New("Item short description is required")
+			return errors.New("Item description is required")
 		}
 
-		descRegax := regexp.MustCompile(`^[\w\s\-&]+$`)
-		if !descRegax.MatchString(item.ShortDescription) {
+		descRegex := regexp.MustCompile(`^[\w\s\-&]+$`)
+		if !descRegex.MatchString(item.ShortDescription) {
 			return errors.New("Item short description contains invalid characters")
 		}
 
@@ -54,22 +74,22 @@ func (r *Receipt) Validate() error {
 			return errors.New("Item price is required")
 		}
 
-		priceRegax := regexp.MustCompile(`^\d+\.\d{2}$`)
-		if !priceRegax.MatchString(item.Price) {
+		priceRegex := regexp.MustCompile(`^\d+\.\d{2}$`)
+		if !priceRegex.MatchString(item.Price) {
 			return errors.New("Invalid item price format")
 		}
-
 	}
+	return nil
+}
 
-	if r.Total == "" {
+func validateTotal(total string) error {
+	if total == "" {
 		return errors.New("Total is required")
 	}
 
-	totalRegax := regexp.MustCompile(`^\d+\.\d{2}$`)
-	if !totalRegax.MatchString(r.Total) {
+	totalRegex := regexp.MustCompile(`^\d+\.\d{2}$`)
+	if !totalRegex.MatchString(total) {
 		return errors.New("Invalid total format")
 	}
-
 	return nil
-
 }

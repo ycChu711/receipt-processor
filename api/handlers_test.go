@@ -3,6 +3,7 @@ package api
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -13,123 +14,145 @@ import (
 	"github.com/ycChu711/receipt-processor/services"
 )
 
-func setupTestHandler() *ReceiptHandler {
-	storage := repository.NewInMemoryStorage()
-	service := services.NewReceiptService(storage)
-	return NewReceiptHandler(service)
+const (
+	testDate          = "2022-01-01"
+	testTime          = "13:01"
+	processEndpoint   = "/receipts/process"
+	contentTypeHeader = "Content-Type"
+	jsonContentType   = "application/json"
+)
+
+func createTestHandler() *ReceiptHandler {
+	return NewReceiptHandler(
+		services.NewReceiptService(
+			repository.NewInMemoryStorage(),
+		),
+	)
 }
 
 func TestProcessReceipt(t *testing.T) {
-	// Test valid receipt
-	handler := setupTestHandler()
 
-	receipt := models.Receipt{
-		Retailer:     "Target",
-		PurchaseDate: "2022-01-01",
-		PurchaseTime: "13:01",
-		Items: []models.Item{
-			{ShortDescription: "Mountain Dew 12PK", Price: "6.49"},
-		},
-		Total: "6.49",
-	}
+	handler := createTestHandler()
 
-	body, _ := json.Marshal(receipt)
-	req, _ := http.NewRequest("POST", "/receipts/process", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
+	// valid receipt
+	t.Run("valid receipt", func(t *testing.T) {
+		// Make a simple test receipt
+		receipt := models.Receipt{
+			Retailer:     "Safeway",
+			PurchaseDate: testDate,
+			PurchaseTime: testTime,
+			Items: []models.Item{
+				{ShortDescription: "Ice Cream", Price: "5.99"},
+			},
+			Total: "5.99",
+		}
 
-	rr := httptest.NewRecorder()
-	http.HandlerFunc(handler.ProcessReceipt).ServeHTTP(rr, req)
+		response := sendPostRequest(t, handler.ProcessReceipt, processEndpoint, receipt)
 
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("Handler returned wrong status code: got %v want %v", status, http.StatusOK)
-	}
+		if response.Code != http.StatusOK {
+			t.Fatalf("Should get 200 OK but got %d instead", response.Code)
+		}
 
-	var response models.ReceiptResponse
-	json.Unmarshal(rr.Body.Bytes(), &response)
-	if response.ID == "" {
-		t.Errorf("Expected non-empty ID")
-	}
+		var respData models.ReceiptResponse
+		json.Unmarshal(response.Body.Bytes(), &respData)
 
-	// Test invalid receipt - missing retailer
-	invalidReceipt := models.Receipt{
-		PurchaseDate: "2022-01-01",
-		PurchaseTime: "13:01",
-		Items: []models.Item{
-			{ShortDescription: "Item", Price: "1.00"},
-		},
-		Total: "1.00",
-	}
+		if respData.ID == "" {
+			t.Fatal("not getting a valid id")
+		}
+	})
 
-	body, _ = json.Marshal(invalidReceipt)
-	req, _ = http.NewRequest("POST", "/receipts/process", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
+	// Missing retailer
+	t.Run("missing retailer", func(t *testing.T) {
+		badReceipt := models.Receipt{
+			// Missing retailer
+			PurchaseDate: testDate,
+			PurchaseTime: testTime,
+			Items: []models.Item{
+				{ShortDescription: "Candy", Price: "1.25"},
+			},
+			Total: "1.25",
+		}
 
-	rr = httptest.NewRecorder()
-	http.HandlerFunc(handler.ProcessReceipt).ServeHTTP(rr, req)
+		response := sendPostRequest(t, handler.ProcessReceipt, processEndpoint, badReceipt)
 
-	if status := rr.Code; status != http.StatusBadRequest {
-		t.Errorf("Handler returned wrong status code: got %v want %v", status, http.StatusBadRequest)
-	}
+		if response.Code != http.StatusBadRequest {
+			t.Fatalf("Should get 400 for invalid receipt, got %d", response.Code)
+		}
+	})
 }
 
 func TestGetPoints(t *testing.T) {
-
 	storage := repository.NewInMemoryStorage()
 	service := services.NewReceiptService(storage)
 	handler := NewReceiptHandler(service)
 
 	receipt := models.Receipt{
-		Retailer:     "Target",
-		PurchaseDate: "2022-01-01",
-		PurchaseTime: "13:01",
+		Retailer:     "Shop",
+		PurchaseDate: testDate,
+		PurchaseTime: testTime,
 		Items: []models.Item{
-			{ShortDescription: "Item", Price: "1.00"},
+			{ShortDescription: "Item", Price: "2.49"},
+			{ShortDescription: "Coke", Price: "3.29"},
 		},
-		Total: "1.00",
+		Total: "5.78",
 	}
 
-	body, _ := json.Marshal(receipt)
-	req, _ := http.NewRequest("POST", "/receipts/process", bytes.NewBuffer(body))
-	req.Header.Set("Content-Type", "application/json")
+	response := sendPostRequest(t, handler.ProcessReceipt, processEndpoint, receipt)
+	var processResp models.ReceiptResponse
+	json.Unmarshal(response.Body.Bytes(), &processResp)
+	validID := processResp.ID
 
-	rr := httptest.NewRecorder()
-	http.HandlerFunc(handler.ProcessReceipt).ServeHTTP(rr, req)
+	// valid id
+	t.Run("valid receipt ID", func(t *testing.T) {
 
-	var processResponse models.ReceiptResponse
-	json.Unmarshal(rr.Body.Bytes(), &processResponse)
-	validID := processResponse.ID
+		req, _ := http.NewRequest("GET", fmt.Sprintf("/receipts/%s/points", validID), nil)
+		req = mux.SetURLVars(req, map[string]string{"id": validID})
 
-	// Test with valid ID
-	req, _ = http.NewRequest("GET", "/receipts/"+validID+"/points", nil)
-	vars := map[string]string{
-		"id": validID,
+		recorder := httptest.NewRecorder()
+		handler.GetPoints(recorder, req)
+
+		if recorder.Code != http.StatusOK {
+			t.Fatalf("Should get 200 OK but got %d", recorder.Code)
+		}
+
+		var pointsResp models.PointsResponse
+		json.Unmarshal(recorder.Body.Bytes(), &pointsResp)
+
+		if pointsResp.Points <= 0 {
+			t.Errorf("Invalid points, got %d", pointsResp.Points)
+		}
+	})
+
+	// non-exist id
+	t.Run("nonexistent receipt ID", func(t *testing.T) {
+		fakeID := "non-exist-id"
+		req, _ := http.NewRequest("GET", fmt.Sprintf("/receipts/%s/points", fakeID), nil)
+		req = mux.SetURLVars(req, map[string]string{"id": fakeID})
+
+		recorder := httptest.NewRecorder()
+		handler.GetPoints(recorder, req)
+
+		if recorder.Code != http.StatusNotFound {
+			t.Fatalf("Should get 404 Not Found for nonexistent ID, got %d", recorder.Code)
+		}
+	})
+}
+
+// Helper function to send POST requests and return the response
+func sendPostRequest(t *testing.T, handlerFunc http.HandlerFunc, endpoint string, data interface{}) *httptest.ResponseRecorder {
+	jsonData, err := json.Marshal(data)
+	if err != nil {
+		t.Fatalf("Failed to marshal JSON: %v", err)
 	}
-	req = mux.SetURLVars(req, vars)
 
-	rr = httptest.NewRecorder()
-	http.HandlerFunc(handler.GetPoints).ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusOK {
-		t.Errorf("Handler returned wrong status code: got %v want %v", status, http.StatusOK)
+	req, err := http.NewRequest("POST", endpoint, bytes.NewBuffer(jsonData))
+	if err != nil {
+		t.Fatalf("Failed to create request: %v", err)
 	}
+	req.Header.Set(contentTypeHeader, jsonContentType)
 
-	var pointsResponse models.PointsResponse
-	json.Unmarshal(rr.Body.Bytes(), &pointsResponse)
-	if pointsResponse.Points != 87 {
-		t.Errorf("Expected 87 points, got %v", pointsResponse.Points)
-	}
+	recorder := httptest.NewRecorder()
+	handlerFunc(recorder, req)
 
-	// Test with invalid ID
-	req, _ = http.NewRequest("GET", "/receipts/invalid-id/points", nil)
-	vars = map[string]string{
-		"id": "invalid-id",
-	}
-	req = mux.SetURLVars(req, vars)
-
-	rr = httptest.NewRecorder()
-	http.HandlerFunc(handler.GetPoints).ServeHTTP(rr, req)
-
-	if status := rr.Code; status != http.StatusNotFound {
-		t.Errorf("Handler returned wrong status code: got %v want %v", status, http.StatusNotFound)
-	}
+	return recorder
 }

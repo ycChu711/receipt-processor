@@ -11,6 +11,11 @@ import (
 	"github.com/ycChu711/receipt-processor/utils"
 )
 
+const (
+	headerContentType = "Content-Type"
+	contentTypeJSON   = "application/json"
+)
+
 // ReceiptHandler manages HTTP requests for receipts
 type ReceiptHandler struct {
 	service *services.ReceiptService
@@ -35,7 +40,7 @@ func (h *ReceiptHandler) ProcessReceipt(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		utils.Logger.WithError(err).Error("Failed to decode receipt JSON")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(headerContentType, contentTypeJSON)
 		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid receipt format. Please verify input."})
 		return
 	}
@@ -44,7 +49,7 @@ func (h *ReceiptHandler) ProcessReceipt(w http.ResponseWriter, r *http.Request) 
 	if err := receipt.Validate(); err != nil {
 		utils.Logger.WithError(err).Warn("Receipt validation failed")
 		w.WriteHeader(http.StatusBadRequest)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(headerContentType, contentTypeJSON)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Invalid receipt: " + err.Error(),
 		})
@@ -56,7 +61,7 @@ func (h *ReceiptHandler) ProcessReceipt(w http.ResponseWriter, r *http.Request) 
 	if err != nil {
 		utils.Logger.WithError(err).Error("Failed to process receipt")
 		w.WriteHeader(http.StatusInternalServerError)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(headerContentType, contentTypeJSON)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "Server error processing receipt",
 		})
@@ -65,7 +70,7 @@ func (h *ReceiptHandler) ProcessReceipt(w http.ResponseWriter, r *http.Request) 
 
 	// return id
 	utils.Logger.WithField("id", id).Info("Receipt processed successfully")
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(headerContentType, contentTypeJSON)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(models.ReceiptResponse{ID: id})
 }
@@ -81,7 +86,7 @@ func (h *ReceiptHandler) GetPoints(w http.ResponseWriter, r *http.Request) {
 	if !found {
 		utils.Logger.WithField("id", id).Warn("Receipt not found")
 		w.WriteHeader(http.StatusNotFound)
-		w.Header().Set("Content-Type", "application/json")
+		w.Header().Set(headerContentType, contentTypeJSON)
 		json.NewEncoder(w).Encode(map[string]string{
 			"error": "No receipt found for that ID",
 		})
@@ -93,7 +98,7 @@ func (h *ReceiptHandler) GetPoints(w http.ResponseWriter, r *http.Request) {
 		"points": points,
 	}).Info("Got points for the receipt")
 
-	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set(headerContentType, contentTypeJSON)
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(models.PointsResponse{Points: points})
 }

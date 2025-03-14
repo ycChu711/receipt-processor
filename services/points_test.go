@@ -7,6 +7,12 @@ import (
 )
 
 func TestCalculatePoints(t *testing.T) {
+
+	const (
+		defaultTestDate = "2022-01-01"
+		defaultTestTime = "13:01"
+	)
+
 	tests := []struct {
 		name     string
 		receipt  models.Receipt
@@ -16,8 +22,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Target Example",
 			receipt: models.Receipt{
 				Retailer:     "Target",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items: []models.Item{
 					{ShortDescription: "Mountain Dew 12PK", Price: "6.49"},
 					{ShortDescription: "Emils Cheese Pizza", Price: "12.25"},
@@ -48,8 +54,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Testing Rule 1: Retailer name points",
 			receipt: models.Receipt{
 				Retailer:     "A&W",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
@@ -59,8 +65,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Retailer Name with Only Valid Special Characters",
 			receipt: models.Receipt{
 				Retailer:     "& - &",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
@@ -70,8 +76,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Mixed Case Retailer Name",
 			receipt: models.Receipt{
 				Retailer:     "MiXeD cAsE sToRe",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
@@ -81,8 +87,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Very Long Retailer Name",
 			receipt: models.Receipt{
 				Retailer:     "Super-Extremely-Long-Retailer-Name-With-Many-Characters-For-Testing-Purposes-12345",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
@@ -92,8 +98,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Testing Rule 2: Round dollar amount",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Item", Price: "5.00"}},
 				Total:        "5.00",
 			},
@@ -103,8 +109,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Testing Rule 3: Multiple of 0.25",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Item", Price: "5.25"}},
 				Total:        "5.25",
 			},
@@ -114,8 +120,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Zero Total",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Free Item", Price: "0.00"}},
 				Total:        "0.00",
 			},
@@ -125,8 +131,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Very Small Total Multiple of 0.25",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Tiny", Price: "0.25"}},
 				Total:        "0.25",
 			},
@@ -136,8 +142,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Total Ending in .50",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Half Dollar", Price: "1.50"}},
 				Total:        "1.50",
 			},
@@ -147,8 +153,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Total Ending in .75",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Three Quarters", Price: "1.75"}},
 				Total:        "1.75",
 			},
@@ -158,8 +164,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Total Not Multiple of 0.25",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Odd Price", Price: "1.37"}},
 				Total:        "1.37",
 			},
@@ -169,8 +175,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Testing Rule 4: Points for pairs of items",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items: []models.Item{
 					{ShortDescription: "Item1", Price: "1.00"},
 					{ShortDescription: "Item2", Price: "1.00"},
@@ -186,8 +192,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Single Item",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Single Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
@@ -197,8 +203,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Odd Number of Items",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items: []models.Item{
 					{ShortDescription: "Item1", Price: "1.00"},
 					{ShortDescription: "Item2", Price: "1.00"},
@@ -212,8 +218,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Many Items",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items: []models.Item{
 					{ShortDescription: "Item1", Price: "1.00"},
 					{ShortDescription: "Item2", Price: "1.00"},
@@ -234,8 +240,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Testing Rule 5: Description length multiple of 3",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items: []models.Item{
 					{ShortDescription: "123456789", Price: "3.00"},
 				},
@@ -247,8 +253,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Description with Spaces Needing Trim",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "   ABC ", Price: "5.00"}}, // Trimmed length: 3
 				Total:        "5.00",
 			},
@@ -258,8 +264,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Multiple Descriptions of Length Multiple of 3",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items: []models.Item{
 					{ShortDescription: "ABC", Price: "5.00"},
 					{ShortDescription: "DEFGHI", Price: "10.00"},
@@ -273,8 +279,8 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Testing Rule 7: Odd purchase day",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
-				PurchaseTime: "13:01",
+				PurchaseDate: defaultTestDate,
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
@@ -285,7 +291,7 @@ func TestCalculatePoints(t *testing.T) {
 			receipt: models.Receipt{
 				Retailer:     "Shop",
 				PurchaseDate: "2022-01-31",
-				PurchaseTime: "13:01",
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
@@ -296,7 +302,7 @@ func TestCalculatePoints(t *testing.T) {
 			receipt: models.Receipt{
 				Retailer:     "Shop",
 				PurchaseDate: "2022-04-30",
-				PurchaseTime: "13:01",
+				PurchaseTime: defaultTestTime,
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
 			},
@@ -306,7 +312,7 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Testing Rule 8: Purchase time between 2:00PM and 4:00PM",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
+				PurchaseDate: defaultTestDate,
 				PurchaseTime: "14:30",
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
@@ -317,7 +323,7 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Exactly 2:00 PM",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
+				PurchaseDate: defaultTestDate,
 				PurchaseTime: "14:00",
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
@@ -328,7 +334,7 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Just Before 2:00 PM",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
+				PurchaseDate: defaultTestDate,
 				PurchaseTime: "13:59",
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
@@ -339,7 +345,7 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Just Before 4:00 PM",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
+				PurchaseDate: defaultTestDate,
 				PurchaseTime: "15:59",
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
@@ -350,7 +356,7 @@ func TestCalculatePoints(t *testing.T) {
 			name: "Edge Case - Exactly 4:00 PM",
 			receipt: models.Receipt{
 				Retailer:     "Shop",
-				PurchaseDate: "2022-01-01",
+				PurchaseDate: defaultTestDate,
 				PurchaseTime: "16:00",
 				Items:        []models.Item{{ShortDescription: "Item", Price: "1.00"}},
 				Total:        "1.00",
